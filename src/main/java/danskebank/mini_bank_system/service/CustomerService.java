@@ -1,10 +1,11 @@
 package danskebank.mini_bank_system.service;
 
 import danskebank.mini_bank_system.dto.CustomerDTO;
-import danskebank.mini_bank_system.entity.Account;
 import danskebank.mini_bank_system.entity.Address;
 import danskebank.mini_bank_system.entity.Customer;
 import danskebank.mini_bank_system.entity.CustomerType;
+import danskebank.mini_bank_system.exception.AccountException;
+import danskebank.mini_bank_system.exception.AddressException;
 import danskebank.mini_bank_system.exception.CustomerException;
 import danskebank.mini_bank_system.repository.AccountRepository;
 import danskebank.mini_bank_system.repository.AddressRepository;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,7 +35,7 @@ public class CustomerService {
     public Customer createCustomer(Long accountId, CustomerDTO customerDTO) {
 
         var account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountException("Account not found"));
 
         var existingCustomer = customerRepository.findByNameAndLastnameAndEmailAndPhoneNumber(
                 customerDTO.getName(),
@@ -47,7 +46,7 @@ public class CustomerService {
         if (existingCustomer.isPresent()) {
             var customer = existingCustomer.get();
             if (account.getCustomers().contains(customer)) {
-                throw new RuntimeException("Customer is already assigned to this account.");
+                throw new CustomerException("Customer is already assigned to this account.");
             }
             customer.setAccount(account);
             customerRepository.save(customer);
@@ -94,6 +93,7 @@ public class CustomerService {
         try {
             var customer = customerRepository.findById(id)
                     .orElseThrow(() -> new CustomerException("Customer not found."));
+
             customer.setName(customerDTO.getName());
             customer.setLastname(customerDTO.getLastname());
             customer.setPhoneNumber(customerDTO.getPhoneNumber());
@@ -104,7 +104,8 @@ public class CustomerService {
             customer.setLastModifiedDate(LocalDateTime.now());
 
             if (customerDTO.getAddresses() != null) {
-                List<Address> existingAddresses = addressRepository.findAllByCustomerId(customer.getId());
+                List<Address> existingAddresses = addressRepository.findAllByCustomerId(customer.getId()).orElseThrow(
+                        () -> new AddressException(String.format("No address found with %s id", customer.getId())));
 
                 Map<Long, Address> existingAddressMap = existingAddresses.stream()
                         .collect(Collectors.toMap(Address::getId, address -> address));
