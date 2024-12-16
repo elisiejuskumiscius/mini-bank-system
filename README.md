@@ -10,8 +10,6 @@ Provides a mini bank system that allows to create, update and search the account
 
 * [**Spring-boot** 3+](https://spring.io/projects/spring-boot)
 
-* [**Gradle** 8+](https://docs.gradle.org/8.0/release-notes.html)
-
 
 # Application local environment
 
