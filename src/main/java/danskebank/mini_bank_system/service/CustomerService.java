@@ -91,62 +91,59 @@ public class CustomerService {
 
     @Transactional
     public Customer updateCustomer(Long id, CustomerDTO customerDTO) {
-        var customer = new Customer();
         try {
-            var existingCustomer = customerRepository.findById(id);
-            if (existingCustomer.isPresent()) {
-                customer = existingCustomer.get();
-                customer.setName(customerDTO.getName());
-                customer.setLastname(customerDTO.getLastname());
-                customer.setPhoneNumber(customerDTO.getPhoneNumber());
-                customer.setEmail(customerDTO.getEmail());
-                customer.setType(CustomerType.valueOf(customerDTO.getType()));
-                customer.setVersionNum(customer.getVersionNum() + 1);
-                customer.setLastModifiedBy("User");
-                customer.setLastModifiedDate(LocalDateTime.now());
+            var customer = customerRepository.findById(id)
+                    .orElseThrow(() -> new CustomerException("Customer not found."));
+            customer.setName(customerDTO.getName());
+            customer.setLastname(customerDTO.getLastname());
+            customer.setPhoneNumber(customerDTO.getPhoneNumber());
+            customer.setEmail(customerDTO.getEmail());
+            customer.setType(CustomerType.valueOf(customerDTO.getType()));
+            customer.setVersionNum(customer.getVersionNum() + 1);
+            customer.setLastModifiedBy("User");
+            customer.setLastModifiedDate(LocalDateTime.now());
 
-                if (customerDTO.getAddresses() != null) {
-                    List<Address> existingAddresses = addressRepository.findAllByCustomerId(customer.getId());
+            if (customerDTO.getAddresses() != null) {
+                List<Address> existingAddresses = addressRepository.findAllByCustomerId(customer.getId());
 
-                    Map<Long, Address> existingAddressMap = existingAddresses.stream()
-                            .collect(Collectors.toMap(Address::getId, address -> address));
+                Map<Long, Address> existingAddressMap = existingAddresses.stream()
+                        .collect(Collectors.toMap(Address::getId, address -> address));
 
-                    List<Address> updatedAddresses = new ArrayList<>();
+                List<Address> updatedAddresses = new ArrayList<>();
 
-                    for (var addressUpdate : customerDTO.getAddresses()) {
-                        if (addressUpdate.getId() != null && existingAddressMap.containsKey(addressUpdate.getId())) {
-                            var existingAddress = existingAddressMap.get(addressUpdate.getId());
-                            existingAddress.setStreet(addressUpdate.getStreet());
-                            existingAddress.setCity(addressUpdate.getCity());
-                            existingAddress.setPostalCode(addressUpdate.getPostalCode());
-                            existingAddress.setLastModifiedDate(LocalDateTime.now());
-                            existingAddress.setVersionNum(existingAddress.getVersionNum() + 1);
-                            existingAddress.setLastModifiedBy("Updated User");
-                            updatedAddresses.add(existingAddress);
-                        } else {
-                            var newAddress = new Address();
-                            newAddress.setCustomer(customer);
-                            newAddress.setStreet(addressUpdate.getStreet());
-                            newAddress.setCity(addressUpdate.getCity());
-                            newAddress.setPostalCode(addressUpdate.getPostalCode());
-                            newAddress.setVersionNum(1);
-                            newAddress.setCreatedBy("User");
-                            newAddress.setCreationDate(LocalDateTime.now());
-                            newAddress.setLastModifiedBy("User");
-                            newAddress.setLastModifiedDate(LocalDateTime.now());
-                            updatedAddresses.add(newAddress);
-                        }
+                for (var addressUpdate : customerDTO.getAddresses()) {
+                    if (addressUpdate.getId() != null && existingAddressMap.containsKey(addressUpdate.getId())) {
+                        var existingAddress = existingAddressMap.get(addressUpdate.getId());
+                        existingAddress.setStreet(addressUpdate.getStreet());
+                        existingAddress.setCity(addressUpdate.getCity());
+                        existingAddress.setPostalCode(addressUpdate.getPostalCode());
+                        existingAddress.setLastModifiedDate(LocalDateTime.now());
+                        existingAddress.setVersionNum(existingAddress.getVersionNum() + 1);
+                        existingAddress.setLastModifiedBy("Updated User");
+                        updatedAddresses.add(existingAddress);
+                    } else {
+                        var newAddress = new Address();
+                        newAddress.setCustomer(customer);
+                        newAddress.setStreet(addressUpdate.getStreet());
+                        newAddress.setCity(addressUpdate.getCity());
+                        newAddress.setPostalCode(addressUpdate.getPostalCode());
+                        newAddress.setVersionNum(1);
+                        newAddress.setCreatedBy("User");
+                        newAddress.setCreationDate(LocalDateTime.now());
+                        newAddress.setLastModifiedBy("User");
+                        newAddress.setLastModifiedDate(LocalDateTime.now());
+                        updatedAddresses.add(newAddress);
                     }
-                    addressRepository.saveAll(updatedAddresses);
-                    customer.setAddresses(updatedAddresses);
                 }
-                customerRepository.save(customer);
-                return customer;
+                addressRepository.saveAll(updatedAddresses);
+                customer.setAddresses(updatedAddresses);
             }
+            customerRepository.save(customer);
+            return customer;
+
         } catch (Exception e) {
             throw new CustomerException("Customer not found.", e.getCause());
         }
-        return customer;
     }
 
     public Page<Customer> searchCustomers(String searchTerm, int page, int size) {
