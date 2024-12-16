@@ -1,10 +1,11 @@
 package danskebank.mini_bank_system.service;
 
 import danskebank.mini_bank_system.dto.CustomerDTO;
-import danskebank.mini_bank_system.entity.Account;
 import danskebank.mini_bank_system.entity.Address;
 import danskebank.mini_bank_system.entity.Customer;
 import danskebank.mini_bank_system.entity.CustomerType;
+import danskebank.mini_bank_system.exception.AccountException;
+import danskebank.mini_bank_system.exception.AddressException;
 import danskebank.mini_bank_system.exception.CustomerException;
 import danskebank.mini_bank_system.repository.AccountRepository;
 import danskebank.mini_bank_system.repository.AddressRepository;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,22 +35,21 @@ public class CustomerService {
     public Customer createCustomer(Long accountId, CustomerDTO customerDTO) {
 
         var account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountException("Account not found"));
 
         var existingCustomer = customerRepository.findByNameAndLastnameAndEmailAndPhoneNumber(
                 customerDTO.getName(),
                 customerDTO.getLastname(),
                 customerDTO.getEmail(),
-                customerDTO.getPhoneNumber());
+                customerDTO.getPhoneNumber()).orElse(null);
 
-        if (existingCustomer.isPresent()) {
-            var customer = existingCustomer.get();
-            if (account.getCustomers().contains(customer)) {
-                throw new RuntimeException("Customer is already assigned to this account.");
+        if (existingCustomer != null) {
+            if (account.getCustomers().contains(existingCustomer)) {
+                throw new CustomerException("Customer is already assigned to this account.");
             }
-            customer.setAccount(account);
-            customerRepository.save(customer);
-            return customer;
+            existingCustomer.setAccount(account);
+            customerRepository.save(existingCustomer);
+            return existingCustomer;
 
         } else {
             List<Address> addresses = customerDTO.getAddresses().stream()
@@ -91,59 +89,56 @@ public class CustomerService {
 
     @Transactional
     public Customer updateCustomer(Long id, CustomerDTO customerDTO) {
-        try {
-            var customer = customerRepository.findById(id)
-                    .orElseThrow(() -> new CustomerException("Customer not found."));
-            customer.setName(customerDTO.getName());
-            customer.setLastname(customerDTO.getLastname());
-            customer.setPhoneNumber(customerDTO.getPhoneNumber());
-            customer.setEmail(customerDTO.getEmail());
-            customer.setType(CustomerType.valueOf(customerDTO.getType()));
-            customer.setVersionNum(customer.getVersionNum() + 1);
-            customer.setLastModifiedBy("User");
-            customer.setLastModifiedDate(LocalDateTime.now());
+        var customer = customerRepository.findById(id)
+                .orElseThrow(() -> new CustomerException("Customer not found."));
 
-            if (customerDTO.getAddresses() != null) {
-                List<Address> existingAddresses = addressRepository.findAllByCustomerId(customer.getId());
+        customer.setName(customerDTO.getName());
+        customer.setLastname(customerDTO.getLastname());
+        customer.setPhoneNumber(customerDTO.getPhoneNumber());
+        customer.setEmail(customerDTO.getEmail());
+        customer.setType(CustomerType.valueOf(customerDTO.getType()));
+        customer.setVersionNum(customer.getVersionNum() + 1);
+        customer.setLastModifiedBy("User");
+        customer.setLastModifiedDate(LocalDateTime.now());
 
-                Map<Long, Address> existingAddressMap = existingAddresses.stream()
-                        .collect(Collectors.toMap(Address::getId, address -> address));
+        if (customerDTO.getAddresses() != null) {
+            List<Address> existingAddresses = addressRepository.findAllByCustomerId(customer.getId()).orElseThrow(
+                    () -> new AddressException(String.format("No address found with %s id", customer.getId())));
 
-                List<Address> updatedAddresses = new ArrayList<>();
+            Map<Long, Address> existingAddressMap = existingAddresses.stream()
+                    .collect(Collectors.toMap(Address::getId, address -> address));
 
-                for (var addressUpdate : customerDTO.getAddresses()) {
-                    if (addressUpdate.getId() != null && existingAddressMap.containsKey(addressUpdate.getId())) {
-                        var existingAddress = existingAddressMap.get(addressUpdate.getId());
-                        existingAddress.setStreet(addressUpdate.getStreet());
-                        existingAddress.setCity(addressUpdate.getCity());
-                        existingAddress.setPostalCode(addressUpdate.getPostalCode());
-                        existingAddress.setLastModifiedDate(LocalDateTime.now());
-                        existingAddress.setVersionNum(existingAddress.getVersionNum() + 1);
-                        existingAddress.setLastModifiedBy("Updated User");
-                        updatedAddresses.add(existingAddress);
-                    } else {
-                        var newAddress = new Address();
-                        newAddress.setCustomer(customer);
-                        newAddress.setStreet(addressUpdate.getStreet());
-                        newAddress.setCity(addressUpdate.getCity());
-                        newAddress.setPostalCode(addressUpdate.getPostalCode());
-                        newAddress.setVersionNum(1);
-                        newAddress.setCreatedBy("User");
-                        newAddress.setCreationDate(LocalDateTime.now());
-                        newAddress.setLastModifiedBy("User");
-                        newAddress.setLastModifiedDate(LocalDateTime.now());
-                        updatedAddresses.add(newAddress);
-                    }
+            List<Address> updatedAddresses = new ArrayList<>();
+
+            for (var addressUpdate : customerDTO.getAddresses()) {
+                if (addressUpdate.getId() != null && existingAddressMap.containsKey(addressUpdate.getId())) {
+                    var existingAddress = existingAddressMap.get(addressUpdate.getId());
+                    existingAddress.setStreet(addressUpdate.getStreet());
+                    existingAddress.setCity(addressUpdate.getCity());
+                    existingAddress.setPostalCode(addressUpdate.getPostalCode());
+                    existingAddress.setLastModifiedDate(LocalDateTime.now());
+                    existingAddress.setVersionNum(existingAddress.getVersionNum() + 1);
+                    existingAddress.setLastModifiedBy("Updated User");
+                    updatedAddresses.add(existingAddress);
+                } else {
+                    var newAddress = new Address();
+                    newAddress.setCustomer(customer);
+                    newAddress.setStreet(addressUpdate.getStreet());
+                    newAddress.setCity(addressUpdate.getCity());
+                    newAddress.setPostalCode(addressUpdate.getPostalCode());
+                    newAddress.setVersionNum(1);
+                    newAddress.setCreatedBy("User");
+                    newAddress.setCreationDate(LocalDateTime.now());
+                    newAddress.setLastModifiedBy("User");
+                    newAddress.setLastModifiedDate(LocalDateTime.now());
+                    updatedAddresses.add(newAddress);
                 }
-                addressRepository.saveAll(updatedAddresses);
-                customer.setAddresses(updatedAddresses);
             }
-            customerRepository.save(customer);
-            return customer;
-
-        } catch (Exception e) {
-            throw new CustomerException("Customer not found.", e.getCause());
+            addressRepository.saveAll(updatedAddresses);
+            customer.setAddresses(updatedAddresses);
         }
+        customerRepository.save(customer);
+        return customer;
     }
 
     public Page<Customer> searchCustomers(String searchTerm, int page, int size) {

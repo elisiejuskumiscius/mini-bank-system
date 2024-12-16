@@ -124,15 +124,7 @@ class CustomerServiceTest {
     @Test
     void updateCustomer_ShouldUpdateCustomerAndAddresses_WhenCustomerExists() {
         var customerId = 1L;
-
-        var existingCustomer = new Customer();
-        existingCustomer.setId(customerId);
-        existingCustomer.setName("John");
-        existingCustomer.setLastname("Doe");
-        existingCustomer.setPhoneNumber("1234567890");
-        existingCustomer.setEmail("john.doe@example.com");
-        existingCustomer.setType(CustomerType.PRIVATE);
-        existingCustomer.setVersionNum(1);
+        var existingCustomer = createCustomer();
 
         var existingAddress = new Address();
         existingAddress.setId(1L);
@@ -155,7 +147,7 @@ class CustomerServiceTest {
         customerDTO.setAddresses(List.of(updatedAddressDTO, newAddressDTO));
 
         Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(existingCustomer));
-        Mockito.when(addressRepository.findAllByCustomerId(customerId)).thenReturn(List.of(existingAddress));
+        Mockito.when(addressRepository.findAllByCustomerId(customerId)).thenReturn(Optional.of(List.of(existingAddress)));
         Mockito.when(customerRepository.save(Mockito.any(Customer.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Mockito.when(addressRepository.saveAll(Mockito.anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -188,28 +180,19 @@ class CustomerServiceTest {
     @Test
     void updateCustomer_ShouldAddNewAddress_WhenAddressNotInDatabase() {
         var customerId = 1L;
-
-        var existingCustomer = new Customer();
-        existingCustomer.setId(customerId);
-        existingCustomer.setName("John");
-        existingCustomer.setLastname("Doe");
-        existingCustomer.setPhoneNumber("1234567890");
-        existingCustomer.setEmail("john.doe@example.com");
-        existingCustomer.setType(CustomerType.PRIVATE);
-        existingCustomer.setVersionNum(1);
+        var existingCustomer = createCustomer();
 
         var customerDTO = createCustomerDTO();
-
         var newAddressDTO = createAddressDTO();
 
         customerDTO.setAddresses(List.of(newAddressDTO));
 
         Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(existingCustomer));
-        Mockito.when(addressRepository.findAllByCustomerId(customerId)).thenReturn(List.of());
+        Mockito.when(addressRepository.findAllByCustomerId(customerId)).thenReturn(Optional.of(List.of()));
         Mockito.when(customerRepository.save(Mockito.any(Customer.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Mockito.when(addressRepository.saveAll(Mockito.anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Customer result = customerService.updateCustomer(customerId, customerDTO);
+        var result = customerService.updateCustomer(customerId, customerDTO);
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1, result.getAddresses().size());
@@ -269,4 +252,16 @@ class CustomerServiceTest {
         return addressDTO;
     }
 
+    private Customer createCustomer() {
+        var customerId = 1L;
+        var customer = new Customer();
+        customer.setId(customerId);
+        customer.setName("John");
+        customer.setLastname("Doe");
+        customer.setPhoneNumber("1234567890");
+        customer.setEmail("john.doe@example.com");
+        customer.setType(CustomerType.PRIVATE);
+        customer.setVersionNum(1);
+        return customer;
+    }
 }
