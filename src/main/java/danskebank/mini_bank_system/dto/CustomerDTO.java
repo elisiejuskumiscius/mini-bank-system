@@ -1,12 +1,10 @@
 package danskebank.mini_bank_system.dto;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-@Builder
 public class CustomerDTO {
     private String name;
     private String lastname;
