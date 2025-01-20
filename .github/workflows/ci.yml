@@ -32,4 +32,4 @@ jobs:
       uses: docker/build-push-action@v6
       with:
        push: true
-       tags: elisiejus11/mini-bank-system:latest
+       tags: elisiejus11/demo-project
