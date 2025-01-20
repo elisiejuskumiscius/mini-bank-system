@@ -29,7 +29,8 @@ jobs:
        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build and push to dockerhub
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v5
       with:
+       image: elisiejus11/demo-project
        push: true
-       tags: elisiejus11/demo-project
+       tags: elisiejus11/githubaction:latest
