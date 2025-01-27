@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-run-tests:
 
     runs-on: ubuntu-latest
 
@@ -26,8 +26,8 @@ jobs:
     - name: Run unit tests with Maven
       run: mvn clean verify --batch-mode
 
-  security:
-    needs: build
+  vulnerabilities-scan-with-snyk:
+    needs: build-and-run-tests
     runs-on: ubuntu-latest
 
     permissions:
@@ -58,7 +58,7 @@ jobs:
           sarif_file: snyk.sarif
 
   push-to-artifactory:
-     needs: security
+     needs: vulnerabilities-scan-with-snyk
      runs-on: ubuntu-latest
      
      steps:
