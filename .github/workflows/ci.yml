@@ -57,7 +57,7 @@ jobs:
         with:
           sarif_file: snyk.sarif
 
-  login:
+  push-to-artifactory:
      needs: security
      runs-on: ubuntu-latest
      
