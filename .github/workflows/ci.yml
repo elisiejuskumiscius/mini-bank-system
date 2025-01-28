@@ -58,7 +58,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: elisiejus-app-image
+        image: elisiejus-app:latest
         args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
 
     - name: Upload Snyk SARIF report to GitHub Security tab
