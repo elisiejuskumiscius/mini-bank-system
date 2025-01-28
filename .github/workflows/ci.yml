@@ -44,21 +44,20 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t elisiejus-app:latest .
-        docker save elisiejus-app:latest > elisiejus-app.tar 
+        docker build -t elisiejus11/demo-project:latest . 
 
     - name: Upload Docker Image Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: elisiejus-app-image
-        path: elisiejus-app.tar   
+        name: demo-project-image
+        path: demo-project.tar   
 
     - name: Run Snyk to check Docker image for vulnerabilities
       uses: snyk/actions/docker@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: elisiejus-app:latest
+        image: elisiejus11/demo-project:latest
         args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
 
     - name: Upload Snyk SARIF report to GitHub Security tab
@@ -73,7 +72,7 @@ jobs:
  
     - name: Load Docker Image
       run: |
-        docker load < elisiejus-app.tar       
+        docker load < demo-project.tar       
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
@@ -83,4 +82,4 @@ jobs:
  
     - name: Push Docker Image
       run: |
-        docker push elisiejus-app:latest    
+        docker push elisiejus11/demo-project:latest
