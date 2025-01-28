@@ -45,12 +45,13 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t elisiejus11/demo-project:latest . 
+        docker save elisiejus11/demo-project:latest -o demo-project.tar
 
     - name: Upload Docker Image Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: elisiejus11/demo-project-image
-        path: elisiejus11/demo-project.tar   
+        name: demo-project-image
+        path: demo-project.tar   
 
     - name: Run Snyk to check Docker image for vulnerabilities
       uses: snyk/actions/docker@master
