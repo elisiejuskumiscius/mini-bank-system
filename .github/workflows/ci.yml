@@ -68,7 +68,7 @@ jobs:
     - name: Download Docker Image Artifact
       uses: actions/download-artifact@v3
       with:
-        name: elisiejus-app-image
+        name: demo-project-image
  
     - name: Load Docker Image
       run: |
