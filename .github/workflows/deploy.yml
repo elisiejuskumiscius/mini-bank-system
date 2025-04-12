@@ -51,16 +51,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.EC2_KEY_PAIR }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+
       - name: SSH into EC2 and deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          ssh -i ${{ secrets.EC2_KEY_PAIR }} -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_INSTANCE_ID }} << 'EOF'
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_INSTANCE_ID }} << 'EOF'
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 390844768930.dkr.ecr.eu-north-1.amazonaws.com
           docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
           docker stop demo-app || true
           docker rm demo-app || true
           docker run -d --name demo-app -p 8080:8080 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
           EOF
+
+      - name: Remove key
+        if: always()
+        run: rm -f ec2_key.pem
