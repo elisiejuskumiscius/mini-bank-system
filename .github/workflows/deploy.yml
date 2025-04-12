@@ -63,7 +63,7 @@ jobs:
           docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
           docker stop demo-app || true
           docker rm demo-app || true
-          docker run -d --name demo-app -p 8080:8080 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          sudo docker run -d --name demo-app -p 8080:8080 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
           EOF
 
       - name: Remove key
