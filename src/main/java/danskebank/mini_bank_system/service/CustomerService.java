@@ -80,7 +80,7 @@ public class CustomerService {
             newCustomer.setCreationDate(LocalDateTime.now());
             newCustomer.setLastModifiedDate(LocalDateTime.now());
             newCustomer.setLastModifiedBy("User");
-            newCustomer.setVersionNum(1);
+//            newCustomer.setVersionNum(1);
 
             customerRepository.save(newCustomer);
             return newCustomer;
@@ -97,7 +97,7 @@ public class CustomerService {
         customer.setPhoneNumber(customerDTO.getPhoneNumber());
         customer.setEmail(customerDTO.getEmail());
         customer.setType(CustomerType.valueOf(customerDTO.getType()));
-        customer.setVersionNum(customer.getVersionNum() + 1);
+//        customer.setVersionNum(customer.getVersionNum() + 1);
         customer.setLastModifiedBy("User");
         customer.setLastModifiedDate(LocalDateTime.now());
 

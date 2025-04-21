@@ -18,11 +18,16 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("""
         SELECT c
         FROM Customer c
+        INNER JOIN Address a
+        ON c.id = a.customer.id
         WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
            OR LOWER(c.lastname) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
            OR LOWER(c.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
            OR LOWER(c.phoneNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
            OR LOWER(c.type) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+           OR LOWER(a.city) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+           OR LOWER(a.street) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+           OR LOWER(a.postalCode) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
     """)
     Page<Customer> searchCustomers(@Param("searchTerm") String searchTerm, Pageable pageable);
 }
