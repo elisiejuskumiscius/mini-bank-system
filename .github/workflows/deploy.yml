@@ -61,7 +61,6 @@ jobs:
           ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 390844768930.dkr.ecr.eu-north-1.amazonaws.com
           docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
-          docker compose pull
           docker compose down
           docker compose up -d
           EOF
