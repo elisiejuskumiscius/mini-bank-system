@@ -10,7 +10,7 @@
     </parent>
     <groupId>danskebank</groupId>
     <artifactId>mini-bank-system</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>mini-bank-system</name>
     <description>Demo project for Danske Bank</description>
     <url/>
