@@ -3,8 +3,6 @@ name: Build, Push to ECR, and Deploy to EC2
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
     
 permissions:
   id-token: write
