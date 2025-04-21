@@ -58,7 +58,10 @@ jobs:
           
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
+      - name: Print current directory
+        run: pwd
+    
       - name: Debug List files
         run: ls -R
         
