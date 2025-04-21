@@ -56,11 +56,14 @@ jobs:
           echo "${{ secrets.EC2_KEY_PAIR }}" > ec2_key.pem
           chmod 600 ec2_key.pem
 
+      - name: Copy docker-compose.yml to EC2
+        run: scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
+        
       - name: SSH into EC2 and deploy
         run: |
           ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
-          echo "$PWD"
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 390844768930.dkr.ecr.eu-north-1.amazonaws.com
+          cd /home/ubuntu
           docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
           docker compose down
           docker compose up -d
