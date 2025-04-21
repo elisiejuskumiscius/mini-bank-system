@@ -41,7 +41,7 @@ jobs:
       - name: Tag Docker image
         run: |
           docker tag myapp:latest 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
-          docker tag postgres:latest 390844768930.dkr.ecr.eu-north-1.amazonaws.com/postgres-repo:latest
+          docker tag postgres:17.4 390844768930.dkr.ecr.eu-north-1.amazonaws.com/postgres-repo:latest
 
       - name: Push Docker image to ECR
         run: |
