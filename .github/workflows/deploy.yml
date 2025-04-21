@@ -59,8 +59,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Debug List files
+        run: ls -R
+        
       - name: Copy docker-compose.yml to EC2
-        run: scp -i ec2_key.pem -o StrictHostKeyChecking=no mini-bank-system/docker-compose.yaml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
+        run: scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.yaml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
         
       - name: SSH into EC2 and deploy
         run: |
