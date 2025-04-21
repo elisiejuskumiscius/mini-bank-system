@@ -31,18 +31,22 @@ jobs:
       - name: Build with Maven
         run: mvn clean package
 
-      - name: Build Docker image
-        run: docker build -t demo-app:latest .
+      - name: Build Docker images with Docker Compose
+        run: docker-compose build
 
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Tag Docker image
-        run: docker tag demo-app:latest 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+        run: |
+          docker tag myapp:latest 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          docker tag postgres:latest 390844768930.dkr.ecr.eu-north-1.amazonaws.com/postgres-repo:latest
 
       - name: Push Docker image to ECR
-        run: docker push 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+        run: |
+          docker push 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          docker push 390844768930.dkr.ecr.eu-north-1.amazonaws.com/postgres-repo:latest
 
   deploy:
     needs: build-and-push
@@ -59,9 +63,9 @@ jobs:
           ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 390844768930.dkr.ecr.eu-north-1.amazonaws.com
           docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
-          docker stop demo-app || true
-          docker rm demo-app || true
-          sudo docker run -d --name demo-app -p 8080:8080 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          docker-compose pull
+          docker-compose down
+          docker-compose up -d
           EOF
 
       - name: Remove key
