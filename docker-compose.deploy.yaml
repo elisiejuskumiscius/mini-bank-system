@@ -1,7 +1,7 @@
 services:
 
   app:
-    image: myapp:latest
+    image: 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
     depends_on:
       - db
     ports:
