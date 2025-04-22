@@ -58,15 +58,12 @@ jobs:
           
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Print current directory
-        run: pwd
-    
-      - name: Debug List files
-        run: ls -R
-      
+
+      - name: Confirm .pem file exists
+        run: ls -la ec2_key.pem
+
       - name: Copy docker-compose.yml to EC2
-        run: scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.yaml ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com:/home/ubuntu/
+        run: scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.yaml ubuntu@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com:/home/ubuntu/
         
       - name: SSH into EC2 and deploy
         run: |
