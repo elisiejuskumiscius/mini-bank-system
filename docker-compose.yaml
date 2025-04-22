@@ -2,7 +2,6 @@ services:
 
   app:
     image: myapp:latest
-    build: .
     depends_on:
       - db
     ports:
