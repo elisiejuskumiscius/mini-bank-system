@@ -64,7 +64,12 @@ jobs:
     
       - name: Debug List files
         run: ls -R
-        
+
+      - name: Print EC2 connection details
+        run: |
+            echo "EC2 User: ${{ secrets.EC2_USER }}"
+            echo "EC2 Host: ${{ secrets.EC2_HOST }}"
+      
       - name: Copy docker-compose.yml to EC2
         run: scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.yaml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
         
