@@ -63,11 +63,11 @@ jobs:
         run: | 
           echo "${{ secrets.EC2_KEY_PAIR }}" > ec2_key.pem
           chmod 600 ec2_key.pem
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com:/home/ubuntu/docker-compose.yaml
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@ec2-16-171-169-93.eu-north-1.compute.amazonaws.com:/home/ubuntu/docker-compose.yaml
         
       - name: SSH into EC2 and deploy
         run: |
-          ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
+          ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-16-171-169-93.eu-north-1.compute.amazonaws.com << 'EOF'
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 390844768930.dkr.ecr.eu-north-1.amazonaws.com
           cd /home/ubuntu
           docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
