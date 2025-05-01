@@ -60,12 +60,18 @@ jobs:
           
       - name: Checkout code
         uses: actions/checkout@v4
-  
+
+      - name: Get EC2 public IP
+        id: get_ip
+        working-directory: terraform
+        run: |
+          echo "ip=$(terraform output -raw app_instance_public_ip)" >> $GITHUB_OUTPUT
+
       - name: Copy docker-compose.yml to EC2
         run: | 
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@ec2-56-228-23-164.${{ secrets.AWS_REGION }}.compute.amazonaws.com:/home/ubuntu/docker-compose.yaml
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@${{ steps.get_ip.outputs.ip }}.${{ secrets.AWS_REGION }}.compute.amazonaws.com:/home/ubuntu/docker-compose.yaml
         
       - name: SSH into EC2 and deploy
         run: |
