@@ -1,8 +1,10 @@
 name: Build, Push to ECR, and Deploy to EC2
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: [ "Terraform AWS Deploy" ]
+    types:
+      - completed
     
 permissions:
   id-token: write
@@ -20,7 +22,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::390844768930:role/ecr-role
-          aws-region: eu-north-1
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -40,11 +42,11 @@ jobs:
 
       - name: Tag Docker image
         run: |
-          docker tag myapp:latest 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          docker tag myapp:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
       - name: Push Docker image to ECR
         run: |
-          docker push 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
   deploy:
     needs: build-and-push
@@ -53,7 +55,7 @@ jobs:
     steps:
       - name: Set up SSH key
         run: |
-          echo "${{ secrets.EC2_KEY_PAIR }}" > ec2_key.pem
+          echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
           
       - name: Checkout code
@@ -61,16 +63,16 @@ jobs:
   
       - name: Copy docker-compose.yml to EC2
         run: | 
-          echo "${{ secrets.EC2_KEY_PAIR }}" > ec2_key.pem
+          echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@ec2-16-171-169-93.eu-north-1.compute.amazonaws.com:/home/ubuntu/docker-compose.yaml
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@ec2-56-228-23-164.${{ secrets.AWS_REGION }}.compute.amazonaws.com:/home/ubuntu/docker-compose.yaml
         
       - name: SSH into EC2 and deploy
         run: |
-          ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-16-171-169-93.eu-north-1.compute.amazonaws.com << 'EOF'
-          aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 390844768930.dkr.ecr.eu-north-1.amazonaws.com
+          ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           cd /home/ubuntu
-          docker pull 390844768930.dkr.ecr.eu-north-1.amazonaws.com/my-repo:latest
+          docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
           docker compose down
           docker compose up -d
           EOF
