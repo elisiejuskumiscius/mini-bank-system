@@ -90,16 +90,16 @@ jobs:
       - name: Check SSH port open
         run: nc -zv ${{ steps.get_ip.outputs.ip }} 22 || echo "SSH port blocked"
 
-      - name: Try SSH manually (debug)
-        run: |
-          echo "Trying ssh connection"
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ steps.get_ip.outputs.ip }} echo "Connected!"
-
       - name: Copy docker-compose.yml to EC2
         run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
           scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@${{ steps.get_ip.outputs.ip }}:/home/ubuntu/docker-compose.yaml
+
+      - name: Try SSH manually (debug)
+        run: |
+          echo "Trying ssh connection"
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ steps.get_ip.outputs.ip }} echo "Connected!"     
 
       - name: SSH into EC2 and deploy
         run: |
