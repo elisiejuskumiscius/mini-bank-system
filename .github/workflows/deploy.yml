@@ -98,7 +98,7 @@ jobs:
 
       - name: SSH into EC2 and deploy
         run: |
-          ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
+          ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ steps.get_ip.outputs.ip }} << 'EOF'
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           cd /home/ubuntu
           docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
