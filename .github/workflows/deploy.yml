@@ -61,6 +61,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init (no apply)
+        working-directory: terraform
+        run: terraform init
+
       - name: Get EC2 public IP
         id: get_ip
         working-directory: terraform
