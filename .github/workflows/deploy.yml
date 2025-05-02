@@ -5,11 +5,11 @@ on:
     workflows: [ "Terraform AWS Deploy" ]
     types:
       - completed
-    
+
 permissions:
   id-token: write
   contents: read
-  
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -57,12 +57,19 @@ jobs:
         run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
-          
+
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Init
         working-directory: terraform
@@ -81,11 +88,11 @@ jobs:
           echo "ip=$(terraform output -raw app_public_ip)" >> $GITHUB_OUTPUT
 
       - name: Copy docker-compose.yml to EC2
-        run: | 
+        run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
           scp -i ec2_key.pem -o StrictHostKeyChecking=no docker-compose.deploy.yaml ubuntu@${{ steps.get_ip.outputs.ip }}:/home/ubuntu/docker-compose.yaml
-        
+
       - name: SSH into EC2 and deploy
         run: |
           ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@ec2-56-228-23-164.eu-north-1.compute.amazonaws.com << 'EOF'
