@@ -72,7 +72,7 @@ jobs:
         id: get_ip
         working-directory: terraform
         run: |
-          echo "ip=$(terraform output -raw app_instance_public_ip)" >> $GITHUB_OUTPUT
+          echo "ip=$(terraform output -raw app_public_ip)" >> $GITHUB_OUTPUT
 
       - name: Copy docker-compose.yml to EC2
         run: | 
