@@ -88,7 +88,7 @@ jobs:
           echo "ip=$(terraform output -raw app_public_ip)" >> $GITHUB_OUTPUT
 
       - name: Check SSH port open
-        run: nc -zv ${{ steps.get_ip.outputs.ip }} || echo "SSH port blocked"
+        run: nc -zv ${{ steps.get_ip.outputs.ip }} 22 || echo "SSH port blocked"
 
       - name: Try SSH manually (debug)
         run: |
