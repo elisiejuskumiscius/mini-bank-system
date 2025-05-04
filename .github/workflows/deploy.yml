@@ -72,6 +72,19 @@ jobs:
         working-directory: terraform
         run: terraform init
 
+      - name: Terraform Refresh
+        run: terraform refresh
+
+      - name: Remove orphaned instance profile from state
+        run: |
+          terraform state list | grep 'aws_iam_instance_profile.ec2_instance_profile' && \
+          terraform state rm aws_iam_instance_profile.ec2_instance_profile || echo "Nothing to remove"
+
+      - name: Terraform Plan
+        env:
+          TF_VAR_public_key: ${{ secrets.EC2_PUBLIC_KEY }}
+        run: terraform plan
+
       - name: Terraform Apply
         working-directory: terraform
         env:
