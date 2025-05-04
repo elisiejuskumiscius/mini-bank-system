@@ -73,12 +73,20 @@ jobs:
         run: terraform init
 
       - name: Terraform Refresh
+        working-directory: terraform
         run: terraform refresh
 
       - name: Remove orphaned instance profile from state
+        working-directory: terraform
         run: |
           terraform state list | grep 'aws_iam_instance_profile.ec2_instance_profile' && \
           terraform state rm aws_iam_instance_profile.ec2_instance_profile || echo "Nothing to remove"
+
+      - name: Import existing IAM role and policy if needed
+        working-directory: terraform
+        run: |
+          terraform import aws_iam_role.ec2_ecr_access ec2-ecr-role || echo "Role already imported or doesn't exist"
+          terraform import aws_iam_policy.ecr_readonly_policy arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/ECRReadOnlyPolicy || echo "Policy already imported or doesn't exist"
 
       - name: Terraform Apply
         working-directory: terraform
