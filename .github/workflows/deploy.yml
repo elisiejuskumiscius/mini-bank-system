@@ -74,6 +74,8 @@ jobs:
 
       - name: Terraform Refresh
         working-directory: terraform
+        env:
+          TF_VAR_public_key: ${{ secrets.EC2_PUBLIC_KEY }}
         run: terraform refresh
 
       - name: Remove orphaned instance profile from state
