@@ -65,8 +65,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::390844768930:role/ecr-role
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Init
@@ -110,7 +109,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-      - name: Deploy
+      - name: Install aws
         run: |
           ssh -T -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ steps.get_ip.outputs.ip }} << 'EOF'
           sudo apt-get update
@@ -119,10 +118,12 @@ jobs:
           unzip awscliv2.zip
           sudo ./aws/install
 
+      - name: Deploy
+        run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          cd /home/ubuntu
           sudo usermod -aG docker ubuntu
           newgrp docker
+          cd /home/ubuntu
           docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
           docker compose down
           docker compose up -d
