@@ -86,6 +86,8 @@ jobs:
 
       - name: Import existing IAM role and policy if needed
         working-directory: terraform
+        env:
+          TF_VAR_public_key: ${{ secrets.EC2_PUBLIC_KEY }}
         run: |
           terraform import aws_iam_role.ec2_ecr_access ec2-ecr-role || echo "Role already imported or doesn't exist"
           terraform import aws_iam_policy.ecr_readonly_policy arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/ECRReadOnlyPolicy || echo "Policy already imported or doesn't exist"
