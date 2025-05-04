@@ -97,6 +97,52 @@ resource "aws_key_pair" "deployer" {
   public_key = var.public_key
 }
 
+resource "aws_iam_role" "ec2_ecr_access" {
+  name = "ec2-ecr-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy" "ecr_readonly_policy" {
+  name = "ECRReadOnlyPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_ecr_policy" {
+  role       = aws_iam_role.ec2_ecr_access.name
+  policy_arn = aws_iam_policy.ecr_readonly_policy.arn
+}
+
+
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2-ecr-profile"
+  role = aws_iam_role.ec2_ecr_access.name
+}
+
 # EC2 Instance - App
 resource "aws_instance" "app" {
   ami           = "ami-0c1ac8a41498c1a9c"
@@ -105,6 +151,8 @@ resource "aws_instance" "app" {
   associate_public_ip_address = true
   key_name      = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
+
+  iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
 
   tags = {
     Name = "App-Server"
