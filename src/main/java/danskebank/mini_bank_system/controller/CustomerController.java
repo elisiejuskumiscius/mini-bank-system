@@ -7,6 +7,7 @@ import danskebank.mini_bank_system.entity.Address;
 import danskebank.mini_bank_system.entity.Customer;
 import danskebank.mini_bank_system.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
@@ -32,6 +34,7 @@ public class CustomerController {
     @PatchMapping("/update/{customerId}")
     public ResponseEntity<Customer> updateCustomer(@PathVariable Long customerId, @RequestBody CustomerDTO customerDTO) {
         Customer updatedCustomer = customerService.updateCustomer(customerId, customerDTO);
+        log.info("----creating----");
         return ResponseEntity.status(HttpStatus.OK).body(updatedCustomer);
     }
 
@@ -41,6 +44,7 @@ public class CustomerController {
             @RequestParam int page,
             @RequestParam int size) {
         Page<Customer> customerPage = customerService.searchCustomers(searchTerm, page, size);
+        log.info("----searching----");
         var response = new CustomerSearchResponse();
         response.setTotalCount(customerPage.getTotalElements());
         response.setCustomers(customerMapper(customerPage.getContent()));
