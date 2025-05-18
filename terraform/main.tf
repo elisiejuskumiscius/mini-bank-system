@@ -143,14 +143,13 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
   role = aws_iam_role.ec2_ecr_access.name
 }
 
-# EC2 Instance - App
 resource "aws_instance" "app" {
-  ami           = "ami-0c1ac8a41498c1a9c"
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public.id
+  ami                         = "ami-0c1ac8a41498c1a9c"
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public.id
   associate_public_ip_address = true
-  key_name      = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.app_sg.id]
+  key_name                    = aws_key_pair.deployer.key_name
+  vpc_security_group_ids      = [aws_security_group.app_sg.id]
 
   iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
 
@@ -159,14 +158,13 @@ resource "aws_instance" "app" {
   }
 }
 
-# EC2 Instance - DB
 resource "aws_instance" "db" {
-  ami           = "ami-0c1ac8a41498c1a9c"
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.private.id
+  ami                         = "ami-0c1ac8a41498c1a9c"
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.private.id
   associate_public_ip_address = false
-  key_name      = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.db_sg.id]
+  key_name                    = aws_key_pair.deployer.key_name
+  vpc_security_group_ids      = [aws_security_group.db_sg.id]
 
   tags = {
     Name = "DB-Server"
