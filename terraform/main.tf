@@ -198,5 +198,4 @@ resource "aws_s3_object" "upload_outputs" {
   bucket = aws_s3_bucket.output_bucket.id
   key    = "outputs.json"
   source = local_file.output_file.filename
-  etag   = filemd5(local_file.output_file.filename)
 }
