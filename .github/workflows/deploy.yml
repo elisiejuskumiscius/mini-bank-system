@@ -46,7 +46,7 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
-  setup-terraform-and-dependencies:
+  deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -138,16 +138,6 @@ jobs:
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install
-
-  deploy:
-    needs: setup-terraform-and-dependencies
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Set up SSH key
-        run: |
-          echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
-          chmod 600 ec2_key.pem 
 
       - name: Deploy
         env:
