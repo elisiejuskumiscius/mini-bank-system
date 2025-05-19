@@ -46,7 +46,7 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
-  setup-terraform:
+  setup-terraform-and-dependencies:
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -108,14 +108,6 @@ jobs:
       - name: Wait for 1 minute
         run: sleep 60
 
-  installing-dependencies:
-    needs: setup-terraform
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Copy docker-compose.yml to EC2
         run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
@@ -148,7 +140,7 @@ jobs:
           sudo ./aws/install
 
   deploy:
-    needs: installing-dependencies
+    needs: setup-terraform-and-dependencies
     runs-on: ubuntu-latest
 
     steps:
