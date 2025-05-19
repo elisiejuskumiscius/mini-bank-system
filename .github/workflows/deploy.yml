@@ -1,4 +1,4 @@
-name: Build, Push to ECR, and Deploy to EC2
+name: Deploy
 
 on:
   push:
@@ -46,7 +46,7 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
-  deploy:
+  setup-terraform:
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -108,6 +108,11 @@ jobs:
       - name: Wait for 1 minute
         run: sleep 60
 
+  installing-dependencies:
+    needs: setup-terraform
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Copy docker-compose.yml to EC2
         run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
@@ -139,6 +144,11 @@ jobs:
           unzip awscliv2.zip
           sudo ./aws/install
 
+  deploy:
+    needs: installing-dependencies
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Deploy
         env:
           DB_NAME: ${{ secrets.DB_NAME }}

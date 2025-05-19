@@ -65,7 +65,6 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
-# Security Group for DB EC2
 resource "aws_security_group" "db_sg" {
   name        = "db-sg"
   description = "Allow Postgres from App SG"
@@ -91,7 +90,6 @@ variable "public_key" {
   type        = string
 }
 
-# Key Pair
 resource "aws_key_pair" "deployer" {
   key_name   = "test_key_pair"
   public_key = var.public_key
@@ -169,4 +167,36 @@ resource "aws_instance" "db" {
   tags = {
     Name = "DB-Server"
   }
+}
+
+resource "aws_s3_bucket" "output_bucket" {
+  bucket = "my-output-bucket"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_versioning" "output_versioning" {
+  bucket = aws_s3_bucket.output_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+locals {
+  output_data = jsonencode({
+    app_public_ip = aws_instance.app.public_ip
+    db_private_ip = aws_instance.db.private_ip
+  })
+}
+
+resource "local_file" "output_file" {
+  content  = local.output_data
+  filename = "${path.module}/outputs.json"
+}
+
+resource "aws_s3_object" "upload_outputs" {
+  bucket = aws_s3_bucket.output_bucket.id
+  key    = "outputs.json"
+  source = local_file.output_file.filename
+  etag   = filemd5(local_file.output_file.filename)
 }
