@@ -170,7 +170,7 @@ resource "aws_instance" "db" {
 }
 
 resource "aws_s3_bucket" "output_bucket" {
-  bucket = "my-output-bucket"
+  bucket = "elisiejus-output-bucket"
   force_destroy = true
 }
 
