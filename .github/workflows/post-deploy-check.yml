@@ -35,6 +35,15 @@ jobs:
           echo "Public IP: $PUBLIC_IP"
           echo "::set-output name=public_ip::$PUBLIC_IP"
 
+      - name: Check public IP availability
+        run: |
+          curl -v ${{ steps.extract-ip.outputs.public_ip }}/actuator/health || echo "Failed with code $?"
+
+      - name: Run ping and traceroute
+        run: |
+          ping -c 3 ${{ steps.extract-ip.outputs.public_ip }} || echo "Ping failed"
+          traceroute ${{ steps.extract-ip.outputs.public_ip }} || echo "Traceroute failed"
+
       - name: Make cURL request
         run: |
           PUBLIC_IP=${{ steps.extract-ip.outputs.public_ip }}
