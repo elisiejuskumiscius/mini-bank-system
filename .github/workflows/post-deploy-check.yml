@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   get-ip-and-check-health:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
