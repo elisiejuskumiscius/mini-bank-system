@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-push:
+  get-ip-and-check-health:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,23 +26,7 @@ jobs:
 
       - name: Download JSON file from S3
         run: |
-          aws s3 cp s3://elisiejus-output-bucket/outputs.json outputs.json    
-
-      - name: Parse JSON file to extract public IP
-        id: extract-ip
-        run: |
-          PUBLIC_IP=$(jq -r '.app_public_ip' outputs.json)
-          echo "Public IP: $PUBLIC_IP"
-          echo "::set-output name=public_ip::$PUBLIC_IP"
-
-      - name: Check public IP availability
-        run: |
-          curl -v ${{ steps.extract-ip.outputs.public_ip }}/actuator/health || echo "Failed with code $?"
-
-      - name: Run ping and traceroute
-        run: |
-          ping -c 3 ${{ steps.extract-ip.outputs.public_ip }} || echo "Ping failed"
-          traceroute ${{ steps.extract-ip.outputs.public_ip }} || echo "Traceroute failed"
+          aws s3 cp s3://elisiejus-output-bucket/outputs.json outputs.json
 
       - name: Make cURL request
         run: |
