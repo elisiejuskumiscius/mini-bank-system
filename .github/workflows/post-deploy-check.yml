@@ -28,6 +28,13 @@ jobs:
         run: |
           aws s3 cp s3://elisiejus-output-bucket/outputs.json outputs.json
 
+      - name: Parse JSON file to extract public IP
+        id: extract-ip
+        run: |
+          PUBLIC_IP=$(jq -r '.app_public_ip' outputs.json)
+          echo "Public IP: $PUBLIC_IP"
+          echo "::set-output name=public_ip::$PUBLIC_IP"     
+
       - name: Make cURL request
         run: |
           PUBLIC_IP=${{ steps.extract-ip.outputs.public_ip }}
