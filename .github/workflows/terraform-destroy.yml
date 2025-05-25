@@ -25,7 +25,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Initialize Terraform
-        run: terraform init -input=false -migrate-state
+        run: terraform init -input=false -force-copy
         working-directory: terraform
 
       - name: Terraform Destroy
