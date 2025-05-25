@@ -28,6 +28,12 @@ jobs:
         run: terraform init -input=false -force-copy
         working-directory: terraform
 
+      - name: Terraform State List
+        run: terraform state list
+        working-directory: terraform
+        env:
+          TF_VAR_public_key: ${{ secrets.EC2_PUBLIC_KEY }}
+   
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
         working-directory: terraform
