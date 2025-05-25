@@ -25,10 +25,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Initialize Terraform
-        run: terraform init
-
-      - name: Select Terraform Workspace
-        run: terraform workspace select default || terraform workspace new default
+        run: terraform init -input=false
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
