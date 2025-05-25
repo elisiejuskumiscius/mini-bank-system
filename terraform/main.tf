@@ -223,13 +223,3 @@ resource "aws_dynamodb_table" "terraform_locks" {
     Name = "TerraformLockTable"
   }
 }
-
-terraform {
-  backend "s3" {
-    bucket         = "elisiejus-app-tf-state-bucket"
-    key            = "terraform/infra.tfstate"
-    region         = "eu-north-1"
-    dynamodb_table = "terraform-locks"
-    encrypt        = true
-  }
-}
