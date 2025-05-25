@@ -70,7 +70,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: terraform
-        run: terraform init
+        run: terraform init -input=false -force-copy
 
       - name: Terraform Refresh
         working-directory: terraform
