@@ -24,8 +24,8 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecr-role
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Initialize Terraform
-        run: terraform init -backend-config="bucket=elisiejus-app-tf-state-bucket" -backend-config="key=terraform/app/terraform.tfstate" -backend-config="region=eu-north-1"
+      - name: Terraform Init
+        run: terraform init -input=false -backend-config="bucket=elisiejus-app-tf-state-bucket" -backend-config="key=terraform/app/terraform.tfstate" -backend-config="region=eu-north-1"
         working-directory: terraform
 
       - name: Terraform State List
