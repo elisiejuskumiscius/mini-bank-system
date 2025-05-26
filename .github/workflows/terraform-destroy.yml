@@ -34,7 +34,9 @@ jobs:
 
       - name: Terraform Refresh
         run: terraform refresh
-        working-directory: terraform   
+        working-directory: terraform
+        env:
+          TF_VAR_public_key: ${{ secrets.EC2_PUBLIC_KEY }}
 
       - name: Terraform State List after refresh
         run: terraform state list
