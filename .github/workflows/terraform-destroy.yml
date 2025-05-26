@@ -40,7 +40,11 @@ jobs:
 
       - name: Terraform State List after refresh
         run: terraform state list
-        working-directory: terraform   
+        working-directory: terraform  
+
+      - name: Terraform Show
+        run: terraform show
+        working-directory: terraform 
    
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
