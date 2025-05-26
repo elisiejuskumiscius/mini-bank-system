@@ -25,10 +25,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Initialize Terraform
-        run: terraform init \
-              -backend-config="bucket=elisiejus-app-tf-state-bucket" \
-              -backend-config="key=terraform/app/terraform.tfstate" \
-              -backend-config="region=eu-north-1"
+        run: terraform init -backend-config="bucket=elisiejus-app-tf-state-bucket" -backend-config="key=terraform/app/terraform.tfstate" -backend-config="region=eu-north-1"
         working-directory: terraform
 
       - name: Terraform State List
